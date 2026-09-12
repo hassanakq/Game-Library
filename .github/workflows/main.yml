@@ -24,16 +24,21 @@ jobs:
           python -m pip install -r backend/requirements.txt
           python -m pip install pyinstaller
 
-      - name: Generate PyInstaller spec
-        run: |
-          python -m PyInstaller --name GameLibrary --noconfirm run_app.py
-
       - name: Build GameLibrary
         run: |
-          python -m PyInstaller --noconfirm --clean GameLibrary.spec
+          .\build.bat
 
-      - name: Upload Windows Build
+      - name: Verify build
+        run: |
+          if (!(Test-Path "dist\GameLibrary.exe")) {
+            Write-Error "GameLibrary.exe was not created!"
+            exit 1
+          }
+
+          Get-Item "dist\GameLibrary.exe"
+
+      - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
           name: GameLibrary-Windows
-          path: dist/
+          path: dist/GameLibrary.exe
