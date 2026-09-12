@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
@@ -25,10 +28,10 @@ jobs:
           python -m pip install pyinstaller
 
       - name: Build GameLibrary
-        run: |
-          .\build.bat
+        run: .\build.bat
 
       - name: Verify build
+        shell: pwsh
         run: |
           if (!(Test-Path "dist\GameLibrary.exe")) {
             Write-Error "GameLibrary.exe was not created!"
@@ -37,8 +40,19 @@ jobs:
 
           Get-Item "dist\GameLibrary.exe"
 
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: GameLibrary-Windows
-          path: dist/GameLibrary.exe
+          tag_name: v1.0.${{ github.run_number }}
+          name: GameLibrary v1.0.${{ github.run_number }}
+          body: |
+            ## GameLibrary for Windows
+
+            Download **GameLibrary.exe** below and run it on Windows.
+
+            ### Installation
+            1. Download `GameLibrary.exe`
+            2. Run it
+            3. If Windows SmartScreen appears, select **More info → Run anyway**
+          files: dist/GameLibrary.exe
+          make_latest: true
