@@ -21,12 +21,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
-          pip install pyinstaller
+          python -m pip install -r backend/requirements.txt
+          python -m pip install pyinstaller
 
       - name: Build GameLibrary
         run: |
-          py -m PyInstaller --noconfirm --clean GameLibrary.spec
+          python -m PyInstaller --noconfirm --clean GameLibrary.spec
 
       - name: Upload Windows Build
         uses: actions/upload-artifact@v4
