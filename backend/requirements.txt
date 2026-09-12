@@ -1,5 +1,0 @@
-fastapi
-uvicorn
-requests
-pywebview>=5.0
-pygame
