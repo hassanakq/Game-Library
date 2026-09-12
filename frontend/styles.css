@@ -1,0 +1,945 @@
+:root {
+  --accent: #ff2b2b;
+  --bg: #0a0a0a;
+  --panel: #141414;
+  --panel-border: #232323;
+  --text: #ededed;
+  --text-dim: #8a8a8a;
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --titlebar-height: 34px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  user-select: none;
+}
+
+/* ---------- resize handles ---------- */
+/* Frameless window: there's no OS border to grab, so these invisible
+   strips along the edges/corners let the user resize it (see app.js). */
+
+.resize-handle {
+  position: fixed;
+  z-index: 10000;
+  background: transparent;
+}
+
+.rz-n, .rz-s {
+  left: 8px;
+  right: 8px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.rz-n { top: 0; }
+.rz-s { bottom: 0; }
+
+.rz-e, .rz-w {
+  top: 8px;
+  bottom: 8px;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.rz-e { right: 0; }
+.rz-w { left: 0; }
+
+.rz-ne, .rz-nw, .rz-se, .rz-sw {
+  width: 12px;
+  height: 12px;
+}
+
+.rz-ne { top: 0; right: 0; cursor: nesw-resize; }
+.rz-sw { bottom: 0; left: 0; cursor: nesw-resize; }
+.rz-nw { top: 0; left: 0; cursor: nwse-resize; }
+.rz-se { bottom: 0; right: 0; cursor: nwse-resize; }
+
+/* No resizing (or title bar) needed once the OS puts us in true fullscreen. */
+body.is-fullscreen .resize-handle,
+body.is-fullscreen .titlebar {
+  display: none;
+}
+
+/* ---------- title bar ---------- */
+
+.titlebar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  height: var(--titlebar-height);
+  background: var(--panel);
+  border-bottom: 1px solid var(--panel-border);
+  -webkit-app-region: drag;
+}
+
+.titlebar-drag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.titlebar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.titlebar-text {
+  font-size: 12px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.titlebar-controls {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.tb-btn {
+  width: 44px;
+  height: var(--titlebar-height);
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.tb-btn svg {
+  width: 10px;
+  height: 10px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1;
+}
+
+.tb-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.tb-close:hover {
+  background: #e81123;
+  color: #fff;
+}
+
+/* ---------- header ---------- */
+
+.bar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 40px 48px 32px;
+  border-bottom: 1px solid var(--panel-border);
+  flex-wrap: wrap;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  letter-spacing: -0.01em;
+  color: var(--accent);
+  transition: color 0.2s ease;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.count {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.btn {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 3px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #0a0a0a;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ---------- color picker ---------- */
+
+.color-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.color-picker {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--panel-border);
+  border-radius: 3px;
+  background: none;
+  cursor: pointer;
+}
+
+.color-picker::-webkit-color-swatch-wrapper {
+  padding: 4px;
+}
+
+.color-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+.color-picker::-moz-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+
+/* ---------- platform filters ---------- */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 20px 48px 0;
+}
+
+.filter-chip {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.filter-chip:hover {
+  color: var(--text);
+}
+
+.filter-chip.active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .filters {
+    padding: 16px 20px 0;
+  }
+}
+
+/* ---------- body ---------- */
+
+main {
+  padding: 32px 48px 64px;
+}
+
+.status {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  position: relative;
+  border: 1px solid var(--panel-border);
+  background: var(--panel);
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+.card:focus-visible {
+  outline: none;
+}
+
+.card-art {
+  width: 100%;
+  aspect-ratio: 460 / 215;
+  background: #1c1c1c;
+  display: block;
+  object-fit: cover;
+}
+
+.card-art.is-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.card-art.is-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 40px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.platform-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.65);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(10, 10, 10, 0.55);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #fff;
+}
+
+.card:hover .card-overlay,
+.card:focus-visible .card-overlay {
+  opacity: 1;
+}
+
+.card-overlay .play-icon {
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 7px 0 7px 11px;
+  border-color: transparent transparent transparent var(--accent);
+}
+
+.card-label {
+  padding: 10px 12px 12px;
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* ---------- icon buttons in the top bar ---------- */
+
+.btn-icon {
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.btn-icon svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+
+.star-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+#favoritesToggle.active {
+  background: var(--accent);
+  color: #0a0a0a;
+}
+
+/* ---------- per-card favorite / remove buttons ---------- */
+
+.card-favorite,
+.card-remove {
+  position: absolute;
+  top: 8px;
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(10, 10, 10, 0.65);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.card:hover .card-favorite,
+.card:hover .card-remove,
+.card:focus-visible .card-favorite,
+.card:focus-visible .card-remove,
+.card-favorite.is-favorite {
+  opacity: 1;
+}
+
+.card-favorite {
+  right: 8px;
+}
+
+.card-remove {
+  right: 40px;
+}
+
+.card-favorite:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.card-favorite.is-favorite {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.card-remove:hover {
+  border-color: #e81123;
+  color: #ff5c68;
+}
+
+/* ---------- controller focus ---------- */
+
+.card.controller-focused {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.card.controller-focused .card-overlay {
+  opacity: 1;
+}
+
+/* Keep HTML hidden elements actually hidden.
+   The modal backdrop has `display: flex`, which otherwise overrides the
+   browser's default [hidden] rule and leaves a transparent overlay +
+   centered black modal over the whole application. */
+[hidden] {
+  display: none !important;
+}
+
+/* ---------- modal ---------- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  width: min(380px, calc(100vw - 48px));
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  padding: 24px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.modal-body {
+  font-size: 13px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-actions .btn {
+  padding: 9px 16px;
+}
+
+.modal-actions .btn-danger {
+  background: #e81123;
+  border-color: #e81123;
+  color: #fff;
+}
+
+.modal-actions button.is-controller-focused,
+.card-favorite.is-controller-focused,
+.card-remove.is-controller-focused {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- controller badge ---------- */
+
+.controller-badge {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.92);
+  border: 1px solid var(--panel-border);
+  font-size: 12px;
+  color: var(--text-dim);
+  z-index: 40;
+}
+
+.controller-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #35d07f;
+}
+
+@media (max-width: 640px) {
+  .bar {
+    padding: 28px 20px 24px;
+  }
+
+  main {
+    padding: 24px 20px 48px;
+  }
+
+  .title {
+    font-size: 30px;
+  }
+}
+
+/* ============================================================
+   WALLPAPER LAYER + GLASS EFFECT
+   ============================================================ */
+
+.wallpaper-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.5s ease, background-image 0.6s ease;
+  pointer-events: none;
+}
+
+.app-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* Once a wallpaper is on, panels need to let it show through instead of
+   sitting on solid backgrounds. */
+body.has-wallpaper .titlebar,
+body.has-wallpaper .bar,
+body.has-wallpaper .card,
+body.has-wallpaper .filter-chip,
+body.has-wallpaper .modal,
+body.has-wallpaper .settings-drawer,
+body.has-wallpaper .controller-badge {
+  background: rgba(20, 20, 20, 0.55);
+}
+
+body.has-wallpaper .card-art {
+  background: rgba(28, 28, 28, 0.6);
+}
+
+/* Frosted-glass: only makes visual sense once there's something behind
+   the panels worth blurring, so it's gated on has-wallpaper too. */
+body.has-wallpaper.glass-on .titlebar,
+body.has-wallpaper.glass-on .bar,
+body.has-wallpaper.glass-on .card,
+body.has-wallpaper.glass-on .filter-chip,
+body.has-wallpaper.glass-on .modal,
+body.has-wallpaper.glass-on .settings-drawer,
+body.has-wallpaper.glass-on .controller-badge {
+  backdrop-filter: blur(var(--glass-blur, 18px)) saturate(160%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 18px)) saturate(160%);
+}
+
+/* ============================================================
+   SETTINGS DRAWER
+   ============================================================ */
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.settings-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.settings-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  width: min(380px, 100vw);
+  background: var(--panel);
+  border-left: 1px solid var(--panel-border);
+  transform: translateX(100%);
+  transition: transform 0.28s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-drawer.open {
+  transform: translateX(0);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+
+.settings-header h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text);
+}
+
+.settings-close {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--panel-border);
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: 4px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+.settings-close:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 20px 32px;
+}
+
+.settings-section {
+  padding: 20px 0;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+}
+
+.settings-section h3 {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+}
+
+.settings-hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.settings-section .color-field {
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* ---------- radio pills (wallpaper mode) ---------- */
+
+.radio-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.radio-pill {
+  cursor: pointer;
+}
+
+.radio-pill input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.radio-pill span {
+  display: inline-block;
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--panel-border);
+  color: var(--text-dim);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.radio-pill input:checked + span {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.radio-pill input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- custom-wallpaper picker + preview ---------- */
+
+.wp-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.wp-preview {
+  width: 64px;
+  height: 40px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+
+.wp-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- sliders ---------- */
+
+.slider-field {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.slider-field span:first-child {
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.slider-field input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--panel-border);
+  outline: none;
+}
+
+.slider-field input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--panel);
+}
+
+.slider-field input[type="range"]::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--panel);
+}
+
+.slider-value {
+  width: 40px;
+  flex-shrink: 0;
+  text-align: right;
+  font-family: var(--font-mono);
+  color: var(--text);
+}
+
+/* ---------- toggle switches ---------- */
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 16px 0;
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.toggle-field input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.toggle-track {
+  position: relative;
+  width: 38px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--panel-border);
+  transition: background 0.15s ease;
+}
+
+.toggle-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.toggle-field input:checked + .toggle-track {
+  background: var(--accent);
+}
+
+.toggle-field input:checked + .toggle-track::after {
+  transform: translateX(16px);
+}
+
+.toggle-field input:focus-visible + .toggle-track {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.settings-section[aria-disabled="true"] .slider-field,
+.settings-section .slider-field.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .settings-drawer {
+    width: 100vw;
+  }
+}
