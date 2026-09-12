@@ -22,10 +22,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
+          pip install pyinstaller
 
       - name: Build
         run: |
-          pyinstaller --clean your_app.spec
+          pyinstaller --clean YOUR_ACTUAL_SPEC_FILE.spec
 
       - name: Upload build
         uses: actions/upload-artifact@v4
