@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -23,6 +23,10 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r backend/requirements.txt
           python -m pip install pyinstaller
+
+      - name: Generate PyInstaller spec
+        run: |
+          python -m PyInstaller --name GameLibrary --noconfirm run_app.py
 
       - name: Build GameLibrary
         run: |
