@@ -33,7 +33,9 @@ The application combines a web-based frontend with a Python backend to provide a
 <p align="center">
   <img src="screenshots/library.png" width="100%" alt="GameLibrary Interface">
 </p>
-
+<p align="center">
+  <img src="screenshots/library1.png" width="100%" alt="GameLibrary Interface">
+</p>
 ---
 
 ## Features
